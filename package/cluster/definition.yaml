@@ -1,0 +1,28 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: clusters.cross-cluster.crossplane.io
+spec:
+  group: cross-cluster.crossplane.io
+  names:
+    kind: Cluster
+    plural: clusters
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              region:
+                type: string
+                description: Region to provision infrastructure in.
+                enum:
+                - west
+                - east
+            required:
+            - region

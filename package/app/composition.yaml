@@ -1,0 +1,74 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: apps.cross-cluster.crossplane.io
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: cross-cluster.crossplane.io/v1alpha1
+    kind: App
+  resources:
+    - base:
+        apiVersion: helm.crossplane.io/v1beta1
+        kind: Release
+        spec:
+          rollbackLimit: 3
+          forProvider:
+            namespace: default
+            chart:
+              name: doc
+              repository: https://kubecon-na.github.io/charts/
+              version: "0.0.2"
+            values: {} 
+            set:
+              - name: pgUser
+                valueFrom:
+                  secretKeyRef:
+                    key: username
+                    name: PATCHME
+                    namespace: crossplane-system
+                    optional: false
+              - name: pgPassword
+                valueFrom:
+                  secretKeyRef:
+                    key: password
+                    name: PATCHME
+                    namespace: crossplane-system
+                    optional: false
+              - name: pgHost
+                valueFrom:
+                  secretKeyRef:
+                    key: endpoint
+                    name: PATCHME
+                    namespace: crossplane-system
+                    optional: false
+      patches:
+        - fromFieldPath: metadata.labels
+          toFieldPath: metadata.labels
+        - fromFieldPath: metadata.annotations
+          toFieldPath: metadata.annotations
+        - fromFieldPath: spec.region
+          toFieldPath: spec.providerConfigRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "helm-%s"
+        - fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.set[0].valueFrom.secretKeyRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "db-%s"
+        - fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.set[1].valueFrom.secretKeyRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "db-%s"
+        - fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.set[2].valueFrom.secretKeyRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "db-%s"
+        
