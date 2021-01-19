@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: new-doc
+  labels:
+    app: new-doc
+spec:
+  selector:
+    matchLabels:
+      app: new-doc
+  template:
+    metadata:
+      labels:
+        app: new-doc
+    spec:
+      initContainers:
+        - name: init-db
+          image: hasheddan/init-db:latest
+          imagePullPolicy: Always
+          env:
+            - name: PGUSER
+              value: {{ .Values.pgUser }}
+            - name: PGPASSWORD
+              value: {{ .Values.pgPassword }}
+            - name: PGHOST
+              value: {{ .Values.pgHost }}
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: postgres
+      containers:
+        - name: doc
+          image: crdsdev/doc:alpha
+          imagePullPolicy: Always
+          env:
+            - name: PG_USER
+              value: {{ .Values.pgUser }}
+            - name: PG_PASS
+              value: {{ .Values.pgPassword }}
+            - name: PG_HOST
+              value: {{ .Values.pgHost }}
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DB
+              value: doc
+            - name: ANALYTICS
+              value: "true"
+          ports:
+            - containerPort: 5000
+              name: doc
+        - name: gitter
+          image: crdsdev/doc-gitter:alpha
+          imagePullPolicy: Always
+          env:
+            - name: PG_USER
+              value: {{ .Values.pgUser }}
+            - name: PG_PASS
+              value: {{ .Values.pgPassword }}
+            - name: PG_HOST
+              value: {{ .Values.pgHost }}
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DB
+              value: doc
