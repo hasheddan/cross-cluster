@@ -1,0 +1,6 @@
+apiVersion: cross-cluster.crossplane.io/v1alpha1
+kind: App
+metadata:
+  name: app-west
+spec:
+  region: west
